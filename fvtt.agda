@@ -4,6 +4,8 @@ open import Agda.Primitive
 open import Agda.Builtin.Nat
 open import Agda.Builtin.Sigma
 open import Agda.Builtin.Equality using (_≡_) renaming (refl to ≡refl)
+open import Agda.Builtin.Equality.Rewrite
+
 module fvtt where
 
     _×_ : Set → Set → Set
@@ -20,8 +22,9 @@ module fvtt where
     data Termsubst : Ctx → Ctx → Set
     data Pro : Ctx → Ctx → Set
     data CtxSeq : Set 
-    data TermsubstSeq : CtxSeq → CtxSeq → Set
     data ProCtx : CtxSeq → Set
+
+
 
 
     data Type where
@@ -55,33 +58,55 @@ module fvtt where
     Γ♪ ⨾- (ι Δ) = Γ♪ ⨾ Δ
     Γ♪ ⨾- (Δ♪ ⨾ Δ) = (Γ♪ ⨾- Δ♪) ⨾ Δ
 
-    data preCtxSeqSeq : Set where                                -- Γ♩ = Γ ⨾′ (Γ₀⁰; ... ; Γ₀­ⁿ⁰) ⨾′ ... ⨾′ (Γ­ₘ⁰ ; ... ; Γₘ­ⁿᵐ) 
-        ι′ : Ctx → preCtxSeqSeq                               
-        _⨾′_ : preCtxSeqSeq → CtxSeq → preCtxSeqSeq              
+    data preCtxSeqSeq : Set where                                -- Γ♩ = Γ ⨾pre (Γ₀⁰; ... ; Γ₀­ⁿ⁰) ⨾pre ... ⨾pre (Γ­ₘ⁰ ; ... ; Γₘ­ⁿᵐ) 
+        ιpre : Ctx → preCtxSeqSeq                               
+        _⨾pre_ : preCtxSeqSeq → CtxSeq → preCtxSeqSeq   
 
-    tail′ : preCtxSeqSeq → Ctx                                   -- tail′ ((Γ₀⁰; ... ; Γ₀­ⁿ⁰) ⨾′ ... ⨾′ (Γ­ₘ⁰ ; ... ; Γₘ­ⁿᵐ)) = Γₘ­ⁿᵐ
-    tail′ (ι′ Γ) = Γ
-    tail′ (Γ ⨾′ Δ) = tail Δ
+    headd : preCtxSeqSeq → Ctx 
+    headd (ιpre Γ) = Γ
+    headd (Γ♩ ⨾pre Δ♪) = headd Γ♩ 
+
+    taill : preCtxSeqSeq → Ctx                                   -- taill ((Γ₀⁰; ... ; Γ₀­ⁿ⁰) ⨾pre ... ⨾pre (Γ­ₘ⁰ ; ... ; Γₘ­ⁿᵐ)) = Γₘ­ⁿᵐ
+    taill (ιpre Γ) = Γ
+    taill (Γ ⨾pre Δ) = tail Δ
+
 
     well-typed : preCtxSeqSeq → Set                               -- Γ₀ⁿ⁰=Γ₁⁰ × ... × Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰
-    well-typed (ι′ Γ) = 1 ≡ 1
-    well-typed (Γ♩ ⨾′ Δ♪) = (well-typed Γ♩) × (tail′ Γ♩ ≡ head Δ♪) 
+    well-typed (ιpre Γ) = 1 ≡ 1
+    well-typed (Γ♩ ⨾pre Δ♪) = (well-typed Γ♩) × (taill Γ♩ ≡ head Δ♪) 
 
     CtxSeqSeq : Set                                             -- Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; Γₘ­ⁿᵐ
     CtxSeqSeq = Σ preCtxSeqSeq well-typed
+
+    ι′ : CtxSeq → CtxSeqSeq
+    ι′ Γ♪ = ( ιpre ( head Γ♪ ) ⨾pre Γ♪ , ≡refl , ≡refl ) 
+    infixr 6 ι′
+
+    ι′′ : Ctx → CtxSeqSeq
+    ι′′ Γ = ι′ ( ι Γ )
+    infixr 6 ι′′
+
+    head′ : CtxSeqSeq → Ctx
+    head′ ( Γ♩ , ξ ) = headd Γ♩
+
+    tail′ : CtxSeqSeq → Ctx
+    tail′ ( Γ♩ , ξ ) = taill Γ♩
+
+    _⨾′_ : (Γ♩ : CtxSeqSeq) → (Δ♪ : CtxSeq) → {tail′ Γ♩ ≡ head Δ♪} → CtxSeqSeq
+    _⨾′_ Γ♩ Δ♪ { ξ }  = ( fst Γ♩ ⨾pre Δ♪ , (snd Γ♩ , ξ ))
 
     glued-concat : (Γ♪ Δ♪ : CtxSeq) → tail Γ♪ ≡ head Δ♪ → CtxSeq  -- glued-concat (Γ₀ ; ... ; Γₙ) (Δ₀ ; ... ; Δₘ) = Γ₀ ; ... ; Γₙ = Δ₀ ; ... ; Δₘ
     glued-concat (ι Γ) Δ♪ ⅋ = Δ♪
     glued-concat (Γ♪ ⨾ Γ) Δ♪ ⅋ = Γ♪ ⨾- Δ♪
 
     alltogether : CtxSeqSeq → CtxSeq                              -- alltogether (Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; Γₘ­ⁿᵐ) = Γ₀⁰ ; ... ; Γ₀­ⁿ⁰=Γ₁⁰ ; ... ; Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰ ; ... ; Γₘ­ⁿᵐ
-    alltogether (ι′ Γ , ξ) = ι Γ
-    alltogether ((Γ♩ ⨾′ ι Δ) , ξ) = alltogether ( Γ♩ , fst ξ )  
-    alltogether ((Γ♩ ⨾′ (Δ♪ ⨾ Θ)) , ξ) = alltogether (Γ♩ ⨾′ Δ♪ , ξ) ⨾ Θ
+    alltogether (ιpre Γ , ξ) = ι Γ
+    alltogether ((Γ♩ ⨾pre ι Δ) , ξ) = alltogether ( Γ♩ , fst ξ )  
+    alltogether ((Γ♩ ⨾pre (Δ♪ ⨾ Θ)) , ξ) = alltogether (Γ♩ ⨾pre Δ♪ , ξ) ⨾ Θ
 
     thin-out : CtxSeqSeq → CtxSeq                                 -- thin-out (Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; Γₘ­ⁿᵐ) = Γ₀⁰ ; Γ₀­ⁿ⁰=Γ₁⁰ ; ... ; Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰ ; Γₘ­ⁿᵐ
-    thin-out (ι′ Γ , ξ) = ι Γ
-    thin-out ((Γ♩ ⨾′ Δ♪) , ξ) = thin-out ( Γ♩ , fst ξ) ⨾ tail Δ♪
+    thin-out (ιpre Γ , ξ) = ι Γ
+    thin-out ((Γ♩ ⨾pre Δ♪) , ξ) = thin-out ( Γ♩ , fst ξ) ⨾ tail Δ♪
 
     infixr 3 _∈_
     data _∈_ : Type → Ctx → Set where                           -- x : A ∈ Γ
@@ -124,7 +149,7 @@ module fvtt where
                                             ----------------
             → Termsubst Γ (Δ ′ A)           -- Γ ⊢ σ , t / Δ , A
 
-    data TermsubstSeq where                     -- Γ♪ ⊢ σ♪ / Δ♪
+    data TermsubstSeq : CtxSeq → CtxSeq → Set where   -- Γ♪ ⊢ σ♪ / Δ♪
         ιι : ∀ {Γ Δ} 
             → Termsubst Γ Δ                 -- Γ ⊢ σ / Δ
                                             ----------------
@@ -166,26 +191,35 @@ module fvtt where
 
     data ProCtx where
         ė : ∀ {Γ} 
-            → ProCtx (ι Γ)                  -- Γ ⊢ · proctx
+            → ProCtx (ι Γ)                  -- Γ ⊢ · 
         _⨾̂_ : ∀ {Γ♪ Δ} 
-            → ProCtx Γ♪                    -- Γ₀ ; ... ; Γₙ ⊢ α₁ ⨾̂ ... ⨾̂ αₙ proctx
+            → ProCtx Γ♪                    -- Γ₀ ; ... ; Γₙ ⊢ a₁ : α₁ ⨾̂ ... ⨾̂ aₙ : αₙ 
             → Pro (tail Γ♪) Δ              -- Γₙ ; Δ ⊢ β pro
                                             ----------------
-            → ProCtx (Γ♪ ⨾ Δ)              -- Γ₀ ; ... ; Γₙ ; Δ ⊢ α₁ ⨾̂ ... ⨾̂ αₙ ⨾̂ β proctx
+            → ProCtx (Γ♪ ⨾ Δ)              -- Γ₀ ; ... ; Γₙ ; Δ ⊢ a₁ : α₁ ⨾̂ ... ⨾̂ aₙ : αₙ ; b : β
     infixr 5 _⨾̂_
 
     proctx-subst : ∀ {Γ♪ Δ♪} 
         → TermsubstSeq Γ♪ Δ♪                                  -- Γ₀ ; ... ; Γₙ ⊢ σ₀ ; ... ; σₙ / Δ₀ ; ... ; Δₙ
-        → ProCtx Δ♪                                           -- Δ₀ ; ... ; Δₙ ⊢ α₁ ⨾̂ ... ⨾̂ αₙ proctx
+        → ProCtx Δ♪                                           -- Δ₀ ; ... ; Δₙ ⊢ a₁ : α₁ ⨾̂ ... ⨾̂ aₙ : αₙ
                                                             ----------------
-        → ProCtx Γ♪                                            -- Γ₀ ; ... ; Γₙ ⊢ α₁ [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ] ⨾̂ ... ⨾̂ αₙ [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ] proctx
+        → ProCtx Γ♪                                            -- Γ₀ ; ... ; Γₙ ⊢ a₁ : α₁ [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ] ⨾̂ ... ⨾̂ aₙ : αₙ [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ]
     proctx-subst (ιι σ) ė = ė                                  -- · [ σ / Δ ] = ·
     proctx-subst (σ♪ ⨾⨾ τ) ( A ⨾̂ α ) = ( proctx-subst σ♪ A) ⨾̂ ( α [ (tail-t σ♪) ⨾ τ ]p ) 
 
-    data Proterm : (Γ♪ : CtxSeq) → ProCtx Γ♪ → Pro (head Γ♪) (tail Γ♪) → Set 
-    -- data ProtermSeq : (Γ♪ : CtxSeqSeq) → ProCtx (head Γ♪) → Pro (head (head Γ♪)) (tail (head Γ♪)) → Set --- これは嘘です
+    data ProCtxSeq : CtxSeqSeq → Set where
+        ιpro : ∀ {Γ♪} 
+            → ProCtx Γ♪                                        -- Γ₀ ; ... ; Γₙ ⊢ a₁ : α₁ ⨾̂ ... ⨾̂ aₙ : αₙ
+                                                                ----------------
+            → ProCtxSeq (ι′ Γ♪)                                -- Γ₀ ; ... ; Γₙ ⊢ a₁ : α₁ ⨾̂ ... ⨾̂ aₙ : αₙ
+        _⨾pro_ : ∀ {Γ♩ Δ♪} 
+            → ProCtxSeq Γ♩                                     -- Γᵢ⁰ ; ... ; Γᵢⁿ ⊢ aᵢ⁰ : αᵢ⁰ ⨾̂ ... ⨾̂ aᵢⁿⁱ : αᵢⁿⁱ (i = 1, ..., m)
+            → ProCtx Δ♪                                        -- Δ₀ ; ... ; Δₙ ⊢ b₁ : β₁ ⨾̂ ... ⨾̂ bₙ : βₙ
+            → { ξ : tail′ Γ♩ ≡ head Δ♪ }                       -- Γₘ⁰ ≡ Δ₀
+                                                                ----------------        
+            → ProCtxSeq ( _⨾′_ Γ♩ Δ♪ { ξ })                     -- Γᵢ⁰ ; ... ; Γᵢⁿ ⊢ aᵢ⁰ : αᵢ⁰ ⨾̂ ... ⨾̂ aᵢⁿⁱ : αᵢⁿⁱ (i = 1, ..., m) + Δ₀ ; ... ; Δₙ ⊢ b₁ : β₁ ⨾̂ ... ⨾̂ bₙ : βₙ
 
-    data Proterm where
+    data Proterm : (Γ♪ : CtxSeq) → ProCtx Γ♪ → Pro (head Γ♪) (tail Γ♪) → Set where
         ≺_,_≻ : ∀ {Γ♪}
             → ( A : ProCtx Γ♪ )                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
             → ( α :( Pro ( head Γ♪ ) ( tail Γ♪ )) )         -- Γ₀ ; Γₙ ⊢ α pro
@@ -214,5 +248,30 @@ module fvtt where
             → ( m : Proterm Δ♪ A β )               -- Δ₀ ; ... ; Δₙ ∣ A ⊢ m : β
             → ( σ : TermsubstSeq Γ♪ Δ♪ )           -- Γ₀ ; ... ; Γₙ ⊢ σ₀ ; ... ; σₙ / Δ₀ ; ... ; Δₙ
             → Proterm Γ♪ ( proctx-subst σ A ) ( β [ head-t σ ⨾ tail-t σ ]p ) -- Γ₀ ; ... ; Γₙ ∣ A [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ] ⊢ m [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ] : β [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ]
-        -- _{_} : ∀ {Γ♩} 
-        --     →
+        -- _{_} : ∀ {Γ♩}                                      -- Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; Γₘ­ⁿᵐ 
+        --     → { A♫ : ProCtxSeq Γ♩ }                       -- Γᵢ⁰ ; ... ; Γᵢⁿ ⊢ Aᵢ (i = 1, ..., m)
+        --     → { B : ProCtx thin-out Γ♩ }                   -- ­Γ₀⁰; ... ; Γₘ­ⁿᵐ ⊢ B proctx
+        --     → { γ : Pro ( head′ Γ♩ ) ( tail′ Γ♩ ) }        -- Γ₀⁰; Γₘ­ⁿᵐ ⊢ γ pro
+        --     → Proterm (thin-out Γ♩) B γ                   -- ­Γ₀⁰; ... ; Γₘ­ⁿᵐ ∣ B ⊢ γ : γ
+        --     → ProtermSeq ? ?                         -- Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; Γₘ­ⁿᵐ ∣ A ⊢ γ : γ
+
+    thin-out-tail=tail : ∀ {Γ♩}
+        → tail (thin-out Γ♩) ≡ tail′ Γ♩
+    thin-out-tail=tail {ιpre x , ξ} = ≡refl
+    thin-out-tail=tail {(G ⨾pre x) , ξ} = ≡refl
+
+    {-# REWRITE thin-out-tail=tail #-}
+        
+    data ProtermSeq : (Γ♩ : CtxSeqSeq) → ProCtxSeq Γ♩ → ProCtx (thin-out Γ♩) → Set where
+        ιprot : ∀ {Γ♪} 
+            → { A : ProCtx Γ♪ }                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
+            → { α : (Pro ( head Γ♪ ) ( tail Γ♪ ) )}       -- Γ₀ ; Γₙ ⊢ α pro
+            → Proterm Γ♪ A α                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α
+            → ProtermSeq (ι′ Γ♪) (ιpro A) (ė ⨾̂ α)       -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α
+        _⨾prot_ : ∀ {Γ♩ Δ♪}
+            → { A♫ : ProCtxSeq Γ♩ }                -- Γ₀⁰; ... ; Γ₀­ⁿ⁰ ⊢ A₀ proctx , ... , Γₘ⁰ ; ... ; Γₘ­ⁿᵐ ⊢ Aₘ proctx
+            → { B : ProCtx Δ♪ }                   -- Δ₀ ; ... ; Δₙ ⊢ B proctx
+            → { ξ : tail′ Γ♩ ≡ head Δ♪ }               -- Γₘ⁰ ≡ Δ₀
+            → { γ♫ : ProCtx (thin-out Γ♩) }        -- ­Γ₀⁰ ; Γ₀¹ ⊢ γ₀ pro, ... , ­Γₘ­⁰ ; Γₘ­ⁿᵐ ⊢ γₘ pro
+            → { δ : Pro ( head Δ♪ ) ( tail Δ♪ ) }       -- Δ₀ ; ... ; Δₙ ⊢ δ pro 
+            → ProtermSeq ( _⨾′_ Γ♩ Δ♪ { ξ }) ( _⨾pro_ A♫ B { ξ }) ( γ♫ ⨾̂ δ) -- tail ( thin-out Γ♩ ) ≡ tail′ Γ♩ ≡ head Δ♪ を使って型を合わせろ 

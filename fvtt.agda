@@ -125,6 +125,19 @@ module fvtt where
             Γ♪ ⨾ Δ
         ∎
 
+    alltogether-⨾ : ∀ { Γ♩ Δ } → ( alltogether (Γ♩ ⨾′ ι Δ)) ≡ ( alltogether Γ♩ )
+    alltogether-⨾ {Γ♩} {Δ} = ≡refl
+
+    alltogether-⨾- : ∀ { Γ♩ Δ♪ } → ( alltogether Γ♩ ⨾- Δ♪ ) ≡ ( alltogether ( Γ♩ ⨾′ Δ♪ ))
+    alltogether-⨾- {Γ♩} {ι Δ} = 
+        begin
+            alltogether Γ♩ ⨾- ι Δ
+        ≡⟨ {!   !} ⟩
+            alltogether Γ♩ 
+        ≡⟨ sym (alltogether-⨾ {Γ♩} {Δ})  ⟩
+            alltogether ( Γ♩ ⨾′ ι Δ )
+        ∎
+    alltogether-⨾- {Γ♩} {Δ♪ ⨾ x} = {!   !}
     -- 
 
 
@@ -219,6 +232,10 @@ module fvtt where
             → ProCtx (Γ♪ ⨾ Δ)              -- Γ₀ ; ... ; Γₙ ; Δ ⊢ a₁ : α₁ ⨾̂ ... ⨾̂ aₙ : αₙ ; b : β
     infixr 5 _⨾̂_
 
+    _⨾-pro_ : ∀ { Γ♪ Δ♪ } → { tail Γ♪ ≡ head Δ♪ } →  ( A : ProCtx Γ♪ ) → ( B : ProCtx Δ♪ ) → ProCtx ( alltogether (( ι′ Γ♪ )⨾′ Δ♪ ))
+    _⨾-pro_ = ?
+
+
     proctx-subst : ∀ {Γ♪ Δ♪} 
         → TermsubstSeq Γ♪ Δ♪                                  -- Γ₀ ; ... ; Γₙ ⊢ σ₀ ; ... ; σₙ / Δ₀ ; ... ; Δₙ
         → ProCtx Δ♪                                           -- Δ₀ ; ... ; Δₙ ⊢ a₁ : α₁ ⨾̂ ... ⨾̂ aₙ : αₙ
@@ -240,8 +257,8 @@ module fvtt where
             → ProCtxSeq ( _⨾′_ Γ♩ Δ♪ { ξ })                     -- Γᵢ⁰ ; ... ; Γᵢⁿ ⊢ aᵢ⁰ : αᵢ⁰ ⨾̂ ... ⨾̂ aᵢⁿⁱ : αᵢⁿⁱ (i = 1, ..., m) + Δ₀ ; ... ; Δₙ ⊢ b₁ : β₁ ⨾̂ ... ⨾̂ bₙ : βₙ
     
     alltogether-pro : ∀ {Γ♩} → ProCtxSeq Γ♩ → ProCtx (alltogether Γ♩)
-    alltogether-pro (ιpro A) = {!   !}
-    alltogether-pro (A♫ ⨾pro B) = {!   !}
+    alltogether-pro (ιpro A) = subst ProCtx ( sym altogether-ι′) A
+    alltogether-pro (A♫ ⨾pro B) = subst ProCtx {!   !} ((alltogether-pro A♫) ⨾pro {!   !})
 
     data Proterm : (Γ♪ : CtxSeq) → ProCtx Γ♪ → Pro (head Γ♪) (tail Γ♪) → Set
     data ProtermSeq : (Γ♩ : CtxSeqSeq) → ProCtxSeq Γ♩ → ProCtx (thin-out Γ♩) → Set 

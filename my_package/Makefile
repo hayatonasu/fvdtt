@@ -1,5 +1,5 @@
 .POSIX:
-SRC = Set.lp intro.lp
+SRC = Set.lp intro.lp fvdbltt.lp
 OBJ = $(SRC:.lp=.lpo)
 .SUFFIXES:
 

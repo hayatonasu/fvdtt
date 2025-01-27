@@ -6,6 +6,7 @@ open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; _∎; step-≡)
 open import Agda.Primitive 
 open import Agda.Builtin.Nat
 open import Agda.Builtin.Sigma
+open import Agda.Builtin.List
 
 {-# BUILTIN REWRITE _≡_ #-}
 
@@ -14,11 +15,10 @@ module fvtt where
     _×_ : Set → Set → Set
     A × B = Σ A (λ _ → B)
 
-    data Version : Set where 
-        product : Version
-        product+unit : Version
-        product+unit+composition : Version
-    
+    data ⊤ : Set where
+        * : ⊤
+
+
     data Type : Set 
     data Ctx : Set
     data Term : Ctx → Type → Set 
@@ -108,50 +108,20 @@ module fvtt where
     thin-out (ιpre Γ , ξ) = ι Γ
     thin-out ((Γ♩ ⨾pre Δ♪) , ξ) = thin-out ( Γ♩ , fst ξ) ⨾ tail Δ♪
 
-    -- We need some calculation here for the formalization
+-- Signature 
+    data CatSig : Set where 
 
-    altogether-ι′ : ∀ {Γ♪} → alltogether (ι′ Γ♪) ≡ Γ♪
-    altogether-ι′ {ι Γ} = ≡refl
-    altogether-ι′ {Γ♪ ⨾ Δ} = 
-        begin 
-            alltogether (ι′ (Γ♪ ⨾ Δ))
-        ≡⟨ (≡refl) ⟩
-            alltogether (ιpre (head (Γ♪ ⨾ Δ)) ⨾pre (Γ♪ ⨾ Δ) , ≡refl , ≡refl)
-        ≡⟨ ≡refl ⟩
-            alltogether (ιpre (head (Γ♪ ⨾ Δ)) ⨾pre (Γ♪) , ≡refl , ≡refl) ⨾ Δ
-        ≡⟨ ≡refl ⟩
-            alltogether (ι′ (Γ♪)) ⨾ Δ
-        ≡⟨ cong ( λ θ → θ ⨾ Δ) altogether-ι′ ⟩
-            Γ♪ ⨾ Δ
-        ∎
+    data FuncSig : CatSig → CatSig → Set where 
 
-    alt-ιpre-head-⨾pre : ∀ {Γ♪} → alltogether ( ( ιpre ( head Γ♪) ⨾pre Γ♪) , ≡refl , ≡refl) ≡ Γ♪
-    alt-ιpre-head-⨾pre {ι x} = ≡refl
-    alt-ιpre-head-⨾pre {Γ♪ ⨾ Δ} = 
-        begin 
-            alltogether ( ( ιpre ( head (Γ♪ ⨾ Δ)) ⨾pre (Γ♪ ⨾ Δ)) , ≡refl , ≡refl)
-        ≡⟨ ≡refl ⟩
-            alltogether ( ( ιpre ( head Γ♪) ⨾pre (Γ♪ ⨾ Δ)) , ≡refl , ≡refl)
-        ≡⟨ ≡refl ⟩
-            alltogether ( ( ιpre ( head Γ♪) ⨾pre Γ♪) , ≡refl , ≡refl) ⨾ Δ
-        ≡⟨ subst (λ x → x ⨾ Δ) {!   !} alt-ιpre-head-⨾pre {Γ♪} ⟩
-            Γ♪ ⨾ Δ
-        ∎
-        
-    alltogether-⨾ : ∀ { Γ♩ Δ } → ( alltogether (Γ♩ ⨾′ ι Δ)) ≡ ( alltogether Γ♩ )
-    alltogether-⨾ {Γ♩} {Δ} = ≡refl
+    data ProFuncSig : CatSig → CatSig → Set where
 
-    alltogether-⨾- : ∀ { Γ♩ Δ♪ } → ( alltogether Γ♩ ⨾- Δ♪ ) ≡ ( alltogether ( Γ♩ ⨾′ Δ♪ ))
-    alltogether-⨾- {Γ♩} {ι Δ} = 
-        begin
-            alltogether Γ♩ ⨾- ι Δ
-        ≡⟨ {!   !} ⟩
-            alltogether Γ♩ 
-        ≡⟨ sym (alltogether-⨾ {Γ♩} {Δ})  ⟩
-            alltogether ( Γ♩ ⨾′ ι Δ )
-        ∎
-    alltogether-⨾- {Γ♩} {Δ♪ ⨾ x} = {!   !}
-    -- 
+    ProFuncSeq : List CatSig → Set 
+    ProFuncSeq [] = CatSig
+    ProFuncSeq (A ∷ []) = ⊤
+    ProFuncSeq (A ∷ A' ∷ B) = ProFuncSig A A' × ProFuncSeq (A' ∷ B)
+    
+
+
 
 
     infixr 3 _∈_
@@ -179,11 +149,6 @@ module fvtt where
             → Term Γ (Prod A B)             -- Γ ⊢ t : A × B
                                             ----------------
             → Term Γ B                      -- Γ ⊢ 〈 1 〉 t : B
-        _[_] : ∀ {Γ Δ A} 
-            → Term Δ A                      -- Δ ⊢ t : A
-            → Termsubst Γ Δ                 -- Γ ⊢ σ / Δ
-                                            ----------------
-            → Term Γ A                      -- Γ ⊢ t [ σ / Δ ] : A
     infixr 5 _[_]
 
     data Termsubst where
@@ -270,78 +235,80 @@ module fvtt where
                                                                 ----------------        
             → ProCtxSeq ( _⨾′_ Γ♩ Δ♪ { ξ })                     -- Γᵢ⁰ ; ... ; Γᵢⁿ ⊢ aᵢ⁰ : αᵢ⁰ ⨾̂ ... ⨾̂ aᵢⁿⁱ : αᵢⁿⁱ (i = 1, ..., m) + Δ₀ ; ... ; Δₙ ⊢ b₁ : β₁ ⨾̂ ... ⨾̂ bₙ : βₙ
     
-    alltogether-pro : ∀ {Γ♩} → ProCtxSeq Γ♩ → ProCtx (alltogether Γ♩)
-    alltogether-pro (ιpro A) = subst ProCtx ( sym altogether-ι′) A
-    alltogether-pro (A♫ ⨾pro B) = {!   !}
+    -- -- alltogether-pro : ∀ {Γ♩} → ProCtxSeq Γ♩ → ProCtx (alltogether Γ♩)
+    -- -- alltogether-pro (ιpro A) = subst ProCtx ( sym altogether-ι′) A
+    -- -- alltogether-pro (A♫ ⨾pro B) = {!   !}
 
-    data Proterm : (Γ♪ : CtxSeq) → ProCtx Γ♪ → Pro (head Γ♪) (tail Γ♪) → Set
-    data ProtermSeq : (Γ♩ : CtxSeqSeq) → ProCtxSeq Γ♩ → ProCtx (thin-out Γ♩) → Set 
+    -- data Proterm : (Γ♪ : CtxSeq) → ProCtx Γ♪ → Pro (head Γ♪) (tail Γ♪) → Set
+    -- data ProtermSeq : (Γ♩ : CtxSeqSeq) → ProCtxSeq Γ♩ → ProCtx (thin-out Γ♩) → Set 
 
-    data Proterm where
-        ≺_,_≻ : ∀ {Γ♪}
-            → ( A : ProCtx Γ♪ )                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
-            → ( α :( Pro ( head Γ♪ ) ( tail Γ♪ )) )         -- Γ₀ ; Γₙ ⊢ α pro
-            → ( β : (Pro ( head Γ♪ ) ( tail Γ♪ ) ))       -- Γ₀ ; Γₙ ⊢ β pro
-            → Proterm Γ♪ A α                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α 
-            → Proterm Γ♪ A β                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ n : β
-            → Proterm Γ♪ A ( α ∧ β )               -- Γ₀ ; ... ; Γₙ ∣ A ⊢ ≺ m , n ≻ : α ∧ β
-        ≺ ≻ : ∀ {Γ♪}
-            → ( A : ProCtx Γ♪ )                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
-            → Proterm Γ♪ A ⊤                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ ≺ ≻ : ⊤
-        π₀ : ∀ {Γ♪}
-            → ( A : ProCtx Γ♪ )                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
-            → ( α : (Pro ( head Γ♪ ) ( tail Γ♪ ) ))       -- Γ₀ ; Γₙ ⊢ α pro
-            → ( β : (Pro ( head Γ♪ ) ( tail Γ♪ ) ))       -- Γ₀ ; Γₙ ⊢ β pro
-            → Proterm Γ♪ A ( α ∧ β )               -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α ∧ β
-            → Proterm Γ♪ A α                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ π₀ m : α
-        π₁ : ∀ {Γ♪}
-            → ( A : ProCtx Γ♪ )                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
-            → ( α : (Pro ( head Γ♪ ) ( tail Γ♪ ) ))       -- Γ₀ ; Γₙ ⊢ α pro
-            → ( β : (Pro ( head Γ♪ ) ( tail Γ♪ ) ))       -- Γ₀ ; Γₙ ⊢ β pro
-            → Proterm Γ♪ A ( α ∧ β )               -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α ∧ β
-            → Proterm Γ♪ A β                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ π₁ m : β
-        _[_]t : ∀ {Γ♪ Δ♪} 
-            → { A : ProCtx Δ♪ }                   -- Δ₀ ; ... ; Δₙ ⊢ A proctx
-            → { β : Pro ( head Δ♪ ) ( tail Δ♪ ) }       -- Δ₀ ; Δₙ ⊢ β pro
-            → ( m : Proterm Δ♪ A β )               -- Δ₀ ; ... ; Δₙ ∣ A ⊢ m : β
-            → ( σ : TermsubstSeq Γ♪ Δ♪ )           -- Γ₀ ; ... ; Γₙ ⊢ σ₀ ; ... ; σₙ / Δ₀ ; ... ; Δₙ
-            → Proterm Γ♪ ( proctx-subst σ A ) ( β [ head-t σ ⨾ tail-t σ ]p ) -- Γ₀ ; ... ; Γₙ ∣ A [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ] ⊢ m [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ] : β [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ]
-        _[[_]] : ∀ {Γ♩}                                      -- Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; Γₘ­ⁿᵐ 
-            → { A♫ : ProCtxSeq Γ♩ }                       -- Γᵢ⁰ ; ... ; Γᵢⁿ ⊢ Aᵢ (i = 1, ..., m)
-            → { B : ProCtx (thin-out Γ♩) }                   -- ­Γ₀⁰; ... ; Γₘ­ⁿᵐ ⊢ B = β₁ ⨾̂ ... ⨾̂ βₘ
-            → { γ : Pro ( head′ Γ♩ ) ( tail′ Γ♩ ) }        -- Γ₀⁰; Γₘ­ⁿᵐ ⊢ γ pro
-            → Proterm (thin-out Γ♩) B {!   !}                   -- ­Γ₀⁰; ... ; Γₘ­ⁿᵐ ∣ B ⊢ n : γ
-            → ProtermSeq Γ♩ A♫ B                 -- Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; [Γₘ­ⁿᵐ=Δ₀] ; Δ₁ ; ... ; Δₙ ⊢ m₁ : β₁ ⨾̂ ... ⨾̂ mₘ : βₘ
-            → Proterm (alltogether Γ♩) (alltogether-pro A♫) {!   !}
+    -- data Proterm where
+    --     ≺_,_≻ : ∀ {Γ♪}
+    --         → ( A : ProCtx Γ♪ )                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
+    --         → ( α :( Pro ( head Γ♪ ) ( tail Γ♪ )) )         -- Γ₀ ; Γₙ ⊢ α pro
+    --         → ( β : (Pro ( head Γ♪ ) ( tail Γ♪ ) ))       -- Γ₀ ; Γₙ ⊢ β pro
+    --         → Proterm Γ♪ A α                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α 
+    --         → Proterm Γ♪ A β                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ n : β
+    --         → Proterm Γ♪ A ( α ∧ β )               -- Γ₀ ; ... ; Γₙ ∣ A ⊢ ≺ m , n ≻ : α ∧ β
+    --     ≺ ≻ : ∀ {Γ♪}
+    --         → ( A : ProCtx Γ♪ )                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
+    --         → Proterm Γ♪ A ⊤                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ ≺ ≻ : ⊤
+    --     π₀ : ∀ {Γ♪}
+    --         → ( A : ProCtx Γ♪ )                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
+    --         → ( α : (Pro ( head Γ♪ ) ( tail Γ♪ ) ))       -- Γ₀ ; Γₙ ⊢ α pro
+    --         → ( β : (Pro ( head Γ♪ ) ( tail Γ♪ ) ))       -- Γ₀ ; Γₙ ⊢ β pro
+    --         → Proterm Γ♪ A ( α ∧ β )               -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α ∧ β
+    --         → Proterm Γ♪ A α                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ π₀ m : α
+    --     π₁ : ∀ {Γ♪}
+    --         → ( A : ProCtx Γ♪ )                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
+    --         → ( α : (Pro ( head Γ♪ ) ( tail Γ♪ ) ))       -- Γ₀ ; Γₙ ⊢ α pro
+    --         → ( β : (Pro ( head Γ♪ ) ( tail Γ♪ ) ))       -- Γ₀ ; Γₙ ⊢ β pro
+    --         → Proterm Γ♪ A ( α ∧ β )               -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α ∧ β
+    --         → Proterm Γ♪ A β                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ π₁ m : β
+    --     _[_]t : ∀ {Γ♪ Δ♪} 
+    --         → { A : ProCtx Δ♪ }                   -- Δ₀ ; ... ; Δₙ ⊢ A proctx
+    --         → { β : Pro ( head Δ♪ ) ( tail Δ♪ ) }       -- Δ₀ ; Δₙ ⊢ β pro
+    --         → ( m : Proterm Δ♪ A β )               -- Δ₀ ; ... ; Δₙ ∣ A ⊢ m : β
+    --         → ( σ : TermsubstSeq Γ♪ Δ♪ )           -- Γ₀ ; ... ; Γₙ ⊢ σ₀ ; ... ; σₙ / Δ₀ ; ... ; Δₙ
+    --         → Proterm Γ♪ ( proctx-subst σ A ) ( β [ head-t σ ⨾ tail-t σ ]p ) -- Γ₀ ; ... ; Γₙ ∣ A [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ] ⊢ m [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ] : β [ σ₀ / Δ₀ ; ... ; σₙ / Δₙ ]
+    --     _[[_]] : ∀ {Γ♩}                                      -- Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; Γₘ­ⁿᵐ 
+    --         → { A♫ : ProCtxSeq Γ♩ }                       -- Γᵢ⁰ ; ... ; Γᵢⁿ ⊢ Aᵢ (i = 1, ..., m)
+    --         → { B : ProCtx (thin-out Γ♩) }                   -- ­Γ₀⁰; ... ; Γₘ­ⁿᵐ ⊢ B = β₁ ⨾̂ ... ⨾̂ βₘ
+    --         → { γ : Pro ( head′ Γ♩ ) ( tail′ Γ♩ ) }        -- Γ₀⁰; Γₘ­ⁿᵐ ⊢ γ pro
+    --         → Proterm (thin-out Γ♩) B {!   !}                   -- ­Γ₀⁰; ... ; Γₘ­ⁿᵐ ∣ B ⊢ n : γ
+    --         → ProtermSeq Γ♩ A♫ B                 -- Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; [Γₘ­ⁿᵐ=Δ₀] ; Δ₁ ; ... ; Δₙ ⊢ m₁ : β₁ ⨾̂ ... ⨾̂ mₘ : βₘ
+    --         → Proterm (alltogether Γ♩) (alltogether-pro A♫) {!   !}
 
-    -- The following is just a technicality, it is not important for the main point of the question
+    -- -- The following is just a technicality, it is not important for the main point of the question
 
-    thin-out-tail=tail : (Γ♩ : CtxSeqSeq)
-        → tail (thin-out Γ♩) ≡ tail′ Γ♩
-    thin-out-tail=tail (ιpre x , ξ) = ≡refl
-    thin-out-tail=tail ((G ⨾pre x) , ξ) = ≡refl
+    -- thin-out-tail=tail : (Γ♩ : CtxSeqSeq)
+    --     → tail (thin-out Γ♩) ≡ tail′ Γ♩
+    -- thin-out-tail=tail (ιpre x , ξ) = ≡refl
+    -- thin-out-tail=tail ((G ⨾pre x) , ξ) = ≡refl
 
-    Pro-curried2 : ∀ {Δ} → (Γ : Ctx) → Set 
-    Pro-curried2 {Δ} Γ = Pro Γ Δ
+    -- Pro-curried2 : ∀ {Δ} → (Γ : Ctx) → Set 
+    -- Pro-curried2 {Δ} Γ = Pro Γ Δ
 
-    merging-pro1 : ∀ {Γ♩ Δ♪} 
-        → { ξ : tail′ Γ♩ ≡ head Δ♪ }
-        → Pro (head Δ♪) (tail Δ♪)
-        → Pro (tail (thin-out Γ♩)) (tail Δ♪)
-    merging-pro1 {Γ♩} {Δ♪} {ξ} α = subst Pro-curried2 (trans (sym ξ) (sym (thin-out-tail=tail Γ♩)) ) α
+    -- merging-pro1 : ∀ {Γ♩ Δ♪} 
+    --     → { ξ : tail′ Γ♩ ≡ head Δ♪ }
+    --     → Pro (head Δ♪) (tail Δ♪)
+    --     → Pro (tail (thin-out Γ♩)) (tail Δ♪)
+    -- merging-pro1 {Γ♩} {Δ♪} {ξ} α = subst Pro-curried2 (trans (sym ξ) (sym (thin-out-tail=tail Γ♩)) ) α
 
-    -- 
+    -- -- 
 
-    data ProtermSeq where
-        ιprot : ∀ {Γ♪} 
-            → { A : ProCtx Γ♪ }                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
-            → { α : (Pro ( head Γ♪ ) ( tail Γ♪ ) )}       -- Γ₀ ; Γₙ ⊢ α pro
-            → Proterm Γ♪ A α                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α
-            → ProtermSeq (ι′ Γ♪) (ιpro A) (ė ⨾̂ α)       -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α
-        _⨾prot_ : ∀ {Γ♩ Δ♪}
-            → { A♫ : ProCtxSeq Γ♩ }                -- Γ₀⁰; ... ; Γ₀­ⁿ⁰ ⊢ A₀ proctx , ... , Γₘ⁰ ; ... ; Γₘ­ⁿᵐ ⊢ Aₘ proctx
-            → { B : ProCtx Δ♪ }                   -- Δ₀ ; ... ; Δₙ ⊢ B proctx
-            → { ξ : tail′ Γ♩ ≡ head Δ♪ }               -- Γₘ⁰ ≡ Δ₀
-            → { γ♫ : ProCtx (thin-out Γ♩) }        -- ­Γ₀⁰ ; Γ₀¹ ⊢ γ₀ pro, ... , ­Γₘ­⁰ ; Γₘ­ⁿᵐ ⊢ γₘ pro
-            → { δ : Pro ( head Δ♪ ) ( tail Δ♪ ) }       -- Δ₀ ; Δₙ ⊢ δ pro 
-             → ProtermSeq ( _⨾′_ Γ♩ Δ♪ { ξ }) ( _⨾pro_ A♫ B { ξ }) ( γ♫ ⨾̂ (merging-pro1 {Γ♩} {Δ♪} {ξ} δ) ) -- Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; [Γₘ­ⁿᵐ=Δ₀] ; Δ₁ ; ... ; Δₙ ⊢ γ₀ ⨾̂ ... ⨾̂ γₘ ⨾̂ δ 
+    -- data ProtermSeq where
+    --     ιprot : ∀ {Γ♪} 
+    --         → { A : ProCtx Γ♪ }                   -- Γ₀ ; ... ; Γₙ ∣ A proctx
+    --         → { α : (Pro ( head Γ♪ ) ( tail Γ♪ ) )}       -- Γ₀ ; Γₙ ⊢ α pro
+    --         → Proterm Γ♪ A α                     -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α
+    --         → ProtermSeq (ι′ Γ♪) (ιpro A) (ė ⨾̂ α)       -- Γ₀ ; ... ; Γₙ ∣ A ⊢ m : α
+    --     _⨾prot_ : ∀ {Γ♩ Δ♪}
+    --         → { A♫ : ProCtxSeq Γ♩ }                -- Γ₀⁰; ... ; Γ₀­ⁿ⁰ ⊢ A₀ proctx , ... , Γₘ⁰ ; ... ; Γₘ­ⁿᵐ ⊢ Aₘ proctx
+    --         → { B : ProCtx Δ♪ }                   -- Δ₀ ; ... ; Δₙ ⊢ B proctx
+    --         → { ξ : tail′ Γ♩ ≡ head Δ♪ }               -- Γₘ⁰ ≡ Δ₀
+    --         → { γ♫ : ProCtx (thin-out Γ♩) }        -- ­Γ₀⁰ ; Γ₀¹ ⊢ γ₀ pro, ... , ­Γₘ­⁰ ; Γₘ­ⁿᵐ ⊢ γₘ pro
+    --         → { δ : Pro ( head Δ♪ ) ( tail Δ♪ ) }       -- Δ₀ ; Δₙ ⊢ δ pro 
+    --          → ProtermSeq ( _⨾′_ Γ♩ Δ♪ { ξ }) ( _⨾pro_ A♫ B { ξ }) ( γ♫ ⨾̂ (merging-pro1 {Γ♩} {Δ♪} {ξ} δ) ) -- Γ₀⁰; ... ; [Γ₀­ⁿ⁰=Γ₁⁰] ; ... ; [Γₘ₋₁­ⁿ⁽ᵐ⁻¹⁾=Γₘ⁰]; ... ; [Γₘ­ⁿᵐ=Δ₀] ; Δ₁ ; ... ; Δₙ ⊢ γ₀ ⨾̂ ... ⨾̂ γₘ ⨾̂ δ 
+ 
+    -- data ProCtx where 

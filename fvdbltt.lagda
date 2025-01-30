@@ -1,8 +1,14 @@
 \documentclass{article}
 \usepackage{preamble_fvdbltt}
 \usepackage{agda}
-\usepackage[utf8]{inputenc} 
-\usepackage[T1]{fontenc}
+
+\usepackage{unicode-math}
+\setmathfont{XITS Math}
+\setmainfont{Latin Modern Roman}
+
+\usepackage{newunicodechar}
+\newunicodechar{∎}{}
+
 
 \title{Implementation of the FVDBLTT in Agda}
 \author{Hayato Nasu}

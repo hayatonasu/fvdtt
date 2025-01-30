@@ -4,11 +4,13 @@
 
 \usepackage{unicode-math}
 \setmathfont{XITS Math}
-\setmainfont{Latin Modern Roman}
 
 \usepackage{newunicodechar}
-\newunicodechar{∎}{}
-
+\newunicodechar{λ}{\ensuremath{\mathnormal\lambda}}
+\newunicodechar{∎}{\ensuremath{\mathnormal{\blacksquare}}}
+\newunicodechar{≡}{\ensuremath{\equiv}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
 
 \title{Implementation of the FVDBLTT in Agda}
 \author{Hayato Nasu}

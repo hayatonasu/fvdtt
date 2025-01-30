@@ -1,8 +1,16 @@
 \documentclass{article}
 \usepackage{preamble_fvdbltt}
 \usepackage{agda}
-\usepackage{fontspec}
 
+\usepackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+\setmathfont{XITS Math}
+
+\usepackage{newunicodechar}
+\newunicodechar{λ}{\ensuremath{\mathnormal\lambda}}
+\newunicodechar{∎}{\ensuremath{\mathnormal{\blacksquare}}}
+\newunicodechar{≡}{\ensuremath{\equiv}}
+\newunicodechar{⟨}{\ensuremath{\langle}}
+\newunicodechar{⟩}{\ensuremath{\rangle}}
 
 \title{Implementation of the FVDBLTT in Agda}
 \author{Hayato Nasu}

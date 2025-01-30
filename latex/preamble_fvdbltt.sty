@@ -1,0 +1,741 @@
+\ProvidesPackage{preamble_fvdbltt}
+\RequirePackage[table]{xcolor}
+\RequirePackage{%
+mathtools,%
+subfiles,%
+bbm,%
+tikz-cd,%
+thmtools,%
+amssymb,%
+ascmac,%
+import,%
+mathrsfs,%
+paralist,%
+esint,%
+stmaryrd,%
+array,% 
+bussproofs,%
+relsize,%
+mathpartir,%
+float,%
+multirow,%
+thm-restate,%
+enumitem,%
+textcomp,%
+regexpatch,%
+scalerel,%
+graphicx,%
+booktabs,%
+framed,%
+}
+\RequirePackage[colorlinks,bookmarks=false]{%
+hyperref,%
+}
+\RequirePackage[nameinlink]{%
+cleveref,%
+}
+\RequirePackage[T1]{%
+fontenc,%
+}
+\RequirePackage{%
+lmodern,%
+}
+\RequirePackage[utf8]{%
+inputenc,%
+}
+\usetikzlibrary{%
+fit,%
+decorations.markings,% to define the key vslash
+}
+\RequirePackage[OMLmathsf,sfdefault=cmssm]{isomath}
+\RequirePackage{%
+orcidlink,%
+}
+\RequirePackage[font=small]{%
+caption,%
+}
+\usepackage{times} 
+
+\allowdisplaybreaks
+
+% yo!
+\DeclareFontFamily{U}{min}{}
+\DeclareFontShape{U}{min}{m}{n}{<-> udmj30}{}
+\newcommand*\yo{\!\text{\usefont{U}{min}{m}{n}\symbol{'207}}\!}
+
+\setlength\intextsep{\glueexpr\intextsep/2\relax}
+
+
+\definecolor{dartmouthgreen}{rgb}{0.05, 0.5, 0.06}
+\definecolor{MAGENTA}{rgb}{0.858, 0.188, 0.478}
+\definecolor{DarkGreen}{rgb}{0.1,0.5,0.2}
+\AtBeginDocument{%
+\hypersetup{%
+    colorlinks=true,
+    linkcolor=RoyalPurple,
+    filecolor=RedViolet,
+    urlcolor=dartmouthgreen,
+}}
+
+\makeatletter
+\newcommand\myparagraph{\@startsection{paragraph}{4}{\z@}%
+  {3.25ex \@plus1ex \@minus.2ex}%
+  {-1ex}%
+  {\normalfont\normalsize\bfseries}
+  }
+\makeatother
+
+
+% % \hypersetup{%
+
+% \makeatletter
+% \define@key {mprset}{style}[1]{\def\TirNameStyle{#1}}
+% \renewcommand\section{\@startsection{section}{1}{\z@}%
+%                     {-3.5ex \@plus -1ex \@minus -.2ex}%
+%                     {2.3ex \@plus.2ex}%
+%                     {\normalfont\large\bfseries}}
+%                     \xpatchcmd\thmt@restatable{%
+%                     \csname #2\@xa\endcsname\ifx\@nx#1\@nx\else[{#1}]\fi
+%                     }{%
+%                     \ifthmt@thisistheone
+%                     \csname #2\@xa\endcsname\ifx\@nx#1\@nx\else[{#1}]\fi
+%                     \else
+%                     \csname #2\@xa\endcsname[{\textbf{Restated}}]
+%                     \fi}{}{}
+% \makeatother
+
+\makeatletter
+\DeclareRobustCommand{\ccong}{\mathrel{\mathpalette\@verequiv\sim}}
+\newcommand{\@verequiv}[2]{%
+  \lower.5\p@\vbox{
+    \lineskiplimit\maxdimen
+    \lineskip-.5\p@
+    \ialign{%
+      $\m@th#1\hfil##\hfil$\crcr
+      #2\crcr
+      \equiv\crcr
+    }%
+  }%
+}
+\makeatother
+
+
+\newcommand*{\nonumparagraph}[1]{\paragraph*{#1}}
+
+
+\DeclareMathSizes{10}{9}{7}{5}
+
+
+%set the number of equations within section
+\numberwithin{equation}{section}
+
+
+\renewcommand*{\theenumi}{\roman{enumi}}
+% \renewcommand*{\labelenumi}{{\theenumi})\,}
+\newlist{enumroman}{enumerate}{10}
+\setlist[enumroman]{label*=\roman*.,ref=\roman*}
+\crefname{enumroman}{\!}{Items\!}
+\Crefname{enumroman}{\!}{Items\!}
+\crefformat{enumroman}{(#2#1#3)}
+%theoremstyles
+
+\declaretheoremstyle[%
+    spaceabove=2em,%
+    spacebelow=2em,%
+    headfont=\normalfont\bfseries,%
+    notefont=\normalfont\bfseries,%
+    notebraces={(}{)},%
+    headpunct={.},%
+    postheadspace=0.5em,%
+    bodyfont=\normalfont,%
+]{mplain}
+
+\declaretheorem[numberwithin=section,name=Theorem]{theorem}
+\declaretheorem[sibling=theorem,name=Lemma]{lemma}
+\declaretheorem[sibling=theorem,name=Proposition]{proposition}
+\declaretheorem[sibling=theorem,name=Corollary]{corollary}
+\declaretheorem[sibling=theorem,name=Fact]{fact}
+\declaretheorem[sibling=theorem,name=Claim]{claim}
+
+\declaretheorem[style=definition,sibling=theorem,name=Definition]{definition}
+\declaretheorem[style=definition,sibling=theorem,name=Conjecture]{conjecture}
+\declaretheorem[style=definition,sibling=theorem,name=Example]{example}
+\declaretheorem[style=definition,sibling=theorem,name=Remark]{remark}
+\declaretheorem[style=definition,sibling=theorem,name=Notation]{notation}
+
+
+\crefname{theorem}{Theorem\!}{Theorems\!}
+\Crefname{theorem}{Theorem\!}{Theorems\!}
+
+\crefname{section}{Section\!}{Sections\!}
+\Crefname{section}{Section\!}{Sections\!}
+\crefname{subsection}{Subsection\!}{Subsections\!}
+\Crefname{subsection}{Subsection\!}{Subsections\!}
+\crefname{definition}{Definition\!}{Definitions\!}
+\Crefname{definition}{Definition\!}{Definitions\!}
+\crefname{notation}{Notation\!}{Notations\!}
+\Crefname{notation}{Notation\!}{Notations\!}
+\crefname{example}{Example\!}{Examples\!}
+\Crefname{example}{Example\!}{Examples\!}
+\crefname{remark}{Remark\!}{Remarks\!}
+\Crefname{remark}{Remark\!}{Remarks\!}
+\crefname{equation}{}{}
+\Crefname{equation}{}{}
+
+\crefname{corollary}{Corollary\!}{Corollary\!}
+\Crefname{corollary}{Corollary\!}{Corollary\!}
+\crefname{proposition}{Proposition\!}{Propositions\!}
+\Crefname{proposition}{Proposition\!}{Propositions\!}
+\crefname{lemma}{Lemma\!}{Lemmas\!}
+\Crefname{lemma}{Lemma\!}{Lemmas\!}
+\crefname{fact}{Fact\!}{Facts\!}
+\Crefname{fact}{Fact\!}{Facts\!}
+
+\crefname{tabular}{Table\!}{Tables\!}
+\Crefname{tabular}{Table\!}{Tables\!}
+\crefname{table}{Table\!}{Tables\!}
+\Crefname{table}{Table\!}{Tables\!}
+
+
+\renewcommand*{\theenumi}{\roman{enumi}}
+\crefname{enumi}{\!}{\!}
+\Crefname{enumi}{\!}{\!}
+\creflabelformat{enumi}{(#2#1#3)}
+\setlist[enumerate,3]{label=(\arabic*)}
+
+
+
+%comments
+\newcommand*{\commentcolorname}{MAGENTA}
+\newcommand*{\comment}[1]{%
+    \textcolor{\commentcolorname}{#1}%
+}
+\newcommand*{\commentcolor}{%
+    \color{\commentcolorname}%
+}
+
+%define colimit
+\newcommand*{\colim}{\operatorname*{colim}}
+
+%%% Tikzcd style
+
+% tikzstyle
+\tikzstyle{vslash} = [decoration={markings, mark=at position 0.5 with {\draw[-] (0,-1.5pt) -- (0,1.5pt);}}, postaction ={decorate}]
+\tikzstyle{vslashslash} = [decoration={markings, mark=at position 0.5 with {\draw[-] (0.2pt,-1.5pt) -- (0.2pt,1.5pt);\draw[-] (-0.2pt,-1.5pt) -- (-0.2pt,1.5pt);}}, postaction ={decorate}]
+\tikzstyle{vdot} = [decoration={markings, mark=at position 0.5 with {\draw [fill] (0,0) circle [radius=1pt];}}, postaction ={decorate}]
+\tikzcdset{equal/.append style={double distance=1.0pt,-}}
+
+
+% Tikzcd set
+\tikzcdset{%
+    arrow style=tikz,
+    diagrams={>={Straight Barb[scale=0.8]}},
+    scale cd/.style={every label/.append style={scale=#1},
+    cells={nodes={scale=#1}}},
+    virtual/.style={row sep=small, scale cd=1},
+}
+
+% sar in tikzcd
+\newcommand*{\sar}[1][]{%
+    \ar[vslash,
+        #1,
+        ]
+}
+%\sal in tikzcd
+\newcommand*{\sal}[1][]{%
+    \sar[leftarrow,
+        #1,
+        ]
+}
+%\al in tikzcd
+\newcommand*{\al}[1][]{%
+    \ar[leftarrow,
+        #1
+        ]
+}
+\newcommand*{\sard}[1][]{%
+    \ar[vslash, dashed,
+        #1,
+        ]
+}
+
+\setlist[itemize]{%
+    leftmargin=1.5em,
+}
+\setlist[enumerate]{%
+    leftmargin=2em,
+}
+
+%triangle
+\makeatletter
+\NewDocumentCommand\Scale{O{1} m}{\scalebox{#1}{$\m@th#2$}}
+\makeatother
+
+\newcommand{\lbl}{
+    \vcenter{\hbox{\,\Scale[0.6]{\blacktriangleleft}\,}}
+}
+\newcommand{\rbl}{
+    \vcenter{\hbox{\,\Scale[0.6]{\blacktriangleright}\,}}
+}
+
+%basics
+\RenewDocumentCommand\to{O{2ex} D<>{}}{\hspace{-1.5truemm}\begin{tikzcd}[column sep=#1, ampersand replacement=\&]\!\ar[r,#2]\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\from}[1][]{\hspace{-1.5truemm}\begin{tikzcd}[column sep=3ex, ampersand replacement=\&]\!\ar[from=r, #1]\&\!\end{tikzcd}\hspace{-1.5truemm}} 
+\newcommand*{\tom}[1][]{\hspace{-1.5truemm}\begin{tikzcd}[column sep=3ex,ampersand replacement=\&]\!\ar[r, #1]\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\syto}[1][]{{\hspace{-1.5truemm}\begin{tikzcd}[column sep=tiny, ampersand replacement=\&]\!\ar[r, #1]\&\!\end{tikzcd}\hspace{-1.5truemm}}}
+\newcommand*{\syfrom}[1][]{{\hspace{-1.5truemm}\begin{tikzcd}[column sep=tiny, ampersand replacement=\&]\!\ar[from=r, #1]\&\!\end{tikzcd}\hspace{-1.5truemm}}}
+\newcommand*{\parato}[2]{\hspace{-1.5truemm}\begin{tikzcd}[column sep=small, ampersand replacement=\&]\!\ar[r, #1, shift left]\ar[r, #2, shift right]\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\sto}[1][]{\hspace{-1.5truemm}\begin{tikzcd}[column sep=small, ampersand replacement=\&]\!\sar[r, #1]\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\stonormal}[1][]{\hspace{-1.5truemm}\begin{tikzcd}[column sep=normal, ampersand replacement=\&]\!\sar[r, #1]\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\stolarge}[1][]{\hspace{-1.5truemm}\begin{tikzcd}[column sep=large, ampersand replacement=\&]\!\sar[r, #1]\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\systo}[1][]{{\hspace{-1.5truemm}\begin{tikzcd}[column sep=tiny, ampersand replacement=\&]\!\sar[r, #1]\&\!\end{tikzcd}\hspace{-1.5truemm}}}
+\newcommand*{\sydto}[1][]{{\hspace{-1.5truemm}\begin{tikzcd}[column sep=tiny, ampersand replacement=\&]\!\ar[r, #1, Rightarrow]\&\!\end{tikzcd}\hspace{-1.5truemm}}}
+\newcommand*{\hto}[1][]{\hspace{-1.5truemm}\begin{tikzcd}[column sep=small, ampersand replacement=\&]\!\ar[r, #1, hook]\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\thto}[1][]{\hspace{-1.5truemm}\begin{tikzcd}[column sep=small, ampersand replacement=\&]\!\ar[r, #1, two heads]\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\thlto}[1][]{\hspace{-1.5truemm}\begin{tikzcd}[ampersand replacement=\&]\!\ar[r, #1, two heads]\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\tto}[1][]{\hspace{-1.5truemm}\begin{tikzcd}[column sep=small, ampersand replacement=\&]\!\ar[r, #1, tail]\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\adjoint}{\hspace{-1.5truemm}\begin{tikzcd}[column sep=small, ampersand replacement=\&]\!%
+        \ar[r, shift right]\ar[r, phantom, "\mbox{\tiny $\bot$}"{marking, yshift=0.1em}]\ar[r, no head, white, shift left=2.6pt, line width=1pt]\al[r, shift left=3.1pt]%
+\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\newcommand*{\adjointleft}{\hspace{-1.5truemm}\begin{tikzcd}[column sep=small, ampersand replacement=\&]\!%
+        \al[r, shift right]\ar[r, phantom, "\mbox{\tiny $\bot$}"{marking, yshift=0.1em}]\ar[r, no head, white, shift left=2.6pt, line width=1pt]\ar[r, shift left=3.1pt]%
+\&\!\end{tikzcd}\hspace{-1.5truemm}}
+\NewDocumentCommand\doublecell{O{rd} m}
+{
+    \ar[
+        #1,
+        phantom, "#2"{description, inner sep=0mm}
+    ]
+}
+\newcommand*{\pullback}[1][rd]{%
+    \doublecell[#1, "\lrcorner"{description, near start, inner sep=0mm}]{}
+}
+\mathchardef\mhyphen="2D % Define a "math hyphen"
+
+
+%%%% Categorical Structures
+\newcommand*{\Set}{\one{S}\zero{et}}
+\NewDocumentCommand{\Rel}{o o}
+{%
+    \dbl{R}\mathrm{el}
+    \IfValueT{#2}{%
+        _{#2}%
+    }%
+    \IfValueT{#1}{%
+    (#1)%
+    }%
+}       
+\newcommand*{\Cat}{\bi{Cat}}
+\newcommand*{\CAT}{\bi{CAT}}
+\newcommand*{\oneCat}{\one{C}\zero{at}}
+\newcommand*{\Fib}{\bi{Fib}}
+\newcommand*{\BiFib}{\bi{BiFib}}
+\newcommand*{\Reg}{\bi{Reg}}
+\newcommand*{\Dbl}{\bi{Dbl}}
+\newcommand*{\Eqp}{\bi{Eqp}}
+\newcommand*{\Model}{\one{M}odel}
+\newcommand*{\Pos}{\one{P}os}
+\newcommand*{\Fam}[1]{\one{F}am(#1)}
+
+\newcommand*{\Frob}{_\bi{Frob}}
+\newcommand*{\FrobMD}{_\bi{Frob,MD}}
+\newcommand*{\BC}{_{\bi{BC}}}
+\newcommand*{\Cauchy}{_{\bi{Cau}}}
+
+
+\newcommand*{\HB}[1]{\bi{H}(#1)}
+
+\NewDocumentCommand{\Span}{o}
+{%
+    \dbl{S}\mathrm{pan}
+    \IfValueT{#1}{%
+        (#1)%
+    }%
+}
+\NewDocumentCommand{\Mat}{o}
+{%
+    \IfValueT{#1}{%
+        {#1}\mhyphen
+    }%
+    \dbl{M}\mathrm{at}
+}
+\NewDocumentCommand{\Prof}{o d<>}
+{%
+    \IfValueT{#2}{%
+        #2\mhyphen
+    }%
+    \dbl{P}\mathrm{rof}
+    \IfValueT{#1}{%
+        (#1)%
+    }%
+}
+\NewDocumentCommand{\PROF}{o d<>}
+{%
+    \IfValueT{#2}{%
+        #2\mhyphen
+    }%
+    \dbl{P}\mathrm{ROF}
+    \IfValueT{#1}{%
+        (#1)%
+    }%
+}
+\NewDocumentCommand{\Mod}{o}
+{%
+    \dbl{M}\mathrm{od}
+    \IfValueT{#1}{%
+        (#1)%
+    }%
+}
+    
+\newcommand*{\BiSpan}{{\bi{S}\mathrm{pan}}}
+\newcommand*{\BiRel}{{\bi{R}\mathrm{el}}}
+\NewDocumentCommand{\PB}{o}
+{%
+    \one{P}\mathrm{b}
+    \IfValueT{#1}{%
+        (#1)%
+    }%
+}
+\newcommand*{\Sig}{\bi{Sign}}
+\newcommand*{\Speci}{\bi{Speci}}
+\newcommand*{\Sign}{\bi{Sign}}
+\newcommand*{\crS}{\dbl{S}^\crude}
+\newcommand*{\crSf}{\dbl{S}^\crude}
+\newcommand*{\crSpeci}{\crude\mhyphen\bi{Speci}}
+\DeclareMathOperator{\ob}{ob}
+\NewDocumentCommand{\Bil}{o}
+{%
+    \dbl{B}\mathrm{il}
+    \IfValueT{#1}{%
+        (#1)%
+    }%
+}
+\NewDocumentCommand{\uni}{o}
+{%
+    \mf{uni}
+    \IfValueT{#1}{%
+        ({#1})%
+    }%
+}
+\NewDocumentCommand{\Uni}{o}
+{%
+    \one{U}\mathrm{ni}
+    \IfValueT{#1}{%
+        ({#1})%
+    }%
+}
+\newcommand*{\LBi}[1]{{\bi{L}}(#1)}
+\newcommand*{\TBi}[1]{{\bi{T}}(#1)}
+\newcommand*{\MapBi}[1]{{\bi{Map}}(#1)}
+\newcommand*{\Map}[1]{\dbl{M}\mathrm{ap}(#1)}
+\newcommand*{\LS}[1]{\dbl{LS}(#1)}
+\newcommand*{\Tone}[1]{\one{T}(#1)}
+\newcommand*{\Cau}[1]{\dbl{C}\mathrm{au}(#1)}
+\newcommand*{\Sub}[1]{\one{S}\mathrm{ub}(#1)}
+\NewDocumentCommand{\Pred}{o o}
+{%
+    \one{P}\mathrm{red}
+    \IfValueT{#2}{%
+        _{#2}%
+    }%
+    \IfValueT{#1}{%
+    (#1)%
+    }%
+}       
+\newcommand*{\Mono}{\zero{Mono}}
+\newcommand*{\Epi}{\zero{Epi}}
+\newcommand*{\RegMono}{\zero{RegMono}}
+\newcommand*{\RegEpi}{\zero{RegEpi}}
+\newcommand*{\Iso}{\zero{Iso}}
+\newcommand*{\All}{\zero{All}}
+\newcommand*{\Fibarr}{\zero{Fib}}
+\newcommand*{\Predarr}{\zero{Prd}}
+
+%%%% Functors
+
+\newcommand*{\dom}{\textsf{dom}}
+\newcommand*{\cod}{\textsf{cod}}
+\newcommand*{\tgt}{\textsf{tgt}}
+\newcommand*{\src}{\textsf{src}}
+\newcommand*{\coEM}[1]{{\mathsf{coEM}}(#1)}
+\newcommand*{\coEMp}[1]{{\mathsf{coEM}}^{\mathsf{cp}}(#1)}
+\newcommand*{\sk}{\text{sk}}
+\newcommand*{\Sp}{\mathrm{Sp}}
+\newcommand*{\Spc}{\Sp^\crude}
+\newcommand*{\Lsk}[1]{#1^{\lsk}}
+\newcommand*{\Lan}{\text{Lan}}
+\newcommand*{\im}{\mathsf{im}}
+\newcommand*{\Ext}{\mathsf{Ext}}
+\newcommand*{\opr}{\mathsf{opRest}}
+
+
+%%%% Cells
+\newcommand*{\mmbox}[1]{\mbox{$#1$}}
+\newcommand*{\mmboxsmall}[1]{\mbox{\small $#1$}}
+\newcommand*{\mmboxfootnotesize}[1]{\mbox{\footnotesize $#1$}}
+\newcommand*{\mmboxscriptsize}[1]{\mbox{\scriptsize $#1$}}
+\newcommand*{\mmboxtiny}[1]{\mbox{\tiny $#1$}}
+\newcommand*{\unit}{\id}
+\newcommand*{\id}{\mathtt{id}}
+\newcommand*{\Id}{\mathtt{Id}}
+\newcommand*{\Idf}{\mathrm{Id}}
+\newcommand*{\carttwo}{_{\bi{cart}}}
+\newcommand*{\restc}{\mmboxsmall{\mathtt{rest}}}
+\newcommand*{\cart}{\mmboxsmall{\mathtt{prn}}}
+\newcommand*{\opcart}{\mmboxsmall{\mathtt{spn}}}
+\newcommand*{\tab}{\mmboxsmall{\mathtt{tab}}}
+
+%%%% Other Operators
+
+\newcommand*{\op}{^\textsf{op}}
+\newcommand*{\co}{^\textsf{co}}
+\newcommand*{\lop}{^\textsf{lop}}
+\newcommand*{\tiop}{^\textsf{top}}
+\newcommand*{\iso}{^{\cong}}
+\newcommand*{\lsk}{\text{lsk}}
+\newcommand*{\inv}{^{-1}}
+\newcommand*{\arrcat}{^{\rightarrow}}
+
+
+\newcommand*{\zero}[1]{\mathrm{#1}}
+\newcommand*{\one}[1]{\mathcal{#1}}
+\newcommand*{\bi}[1]{{\mathbf{#1}}}
+\newcommand*{\dbl}[1]{\mathbbm{#1}}
+\newcommand*{\trpl}[1]{\mathfrak{#1}}
+\newcommand*{\syn}[1]{\mathsf{#1}}
+\newcommand*{\monunit}{\mathnormal{1}}
+\newcommand*{\mf}[1]{\mathfrak{#1}}
+
+%%%% Brackets
+
+\newcommand*{\abs}[1]{{\lvert #1\rvert}}
+\newcommand*{\dblabs}[1]{{\lvert\!\lvert #1\rvert\!\rvert}}
+\newcommand*{\lcp}{\llparenthesis}
+\newcommand*{\rcp}{\rrparenthesis}
+\newcommand*{\sts}[1]{\lceil #1 \rceil}
+\newcommand*{\is}[1]{\ulcorner #1 \urcorner}
+\newcommand*{\sem}[1]{\llbracket #1 \rrbracket}
+\newcommand*{\tpl}[1]{{\langle {#1} \rangle}}
+\newcommand*{\fpl}[1]{{\,\langle\!\langle {#1} \rangle\!\rangle\,}}
+
+%%%% Type Theory
+
+\newcommand*{\ctx}{\,|\,}
+\newcommand*{\ded}{\,\vdash\,}
+\newcommand*{\form}{\mathsf{Formula}}
+\newcommand*{\tyctx}{\textsf{ctx}}
+\newcommand*{\fs}{\fatsemi}
+\newcommand*{\ideind}[1]{\textsf{ind}_{\nrightarrow_{#1}}}
+\newcommand*{\refl}{\textsf{refl}}
+\newcommand*{\compind}[2]{\textsf{ind}_{\odot_{#1,#2}}}
+\newcommand*{\compindd}{\textsf{ind}_{\odot}}
+\newcommand*{\ind}{\textsf{ind}}
+
+\newcommand*{\smcl}{\,\fatsemi\,}
+\newcommand*{\cmpr}[1]{\{\!|#1|\!\}}
+\newcommand*{\pair}{\textsf{pair}}
+\newcommand*{\tabb}{\textsf{tab}}
+\newcommand*{\app}{\textsf{app}}
+
+\newcommand*{\corresp}[1]{%
+\rule{#1}{0.4pt}\\[\dimexpr-\baselineskip+0mm+2pt]
+\rule{#1}{0.4pt}
+}
+
+%%%% Decorations
+
+\newcommand*{\ol}[1]{\overline{#1}}
+\newcommand*{\ul}[1]{\underline{#1}}
+\newcommand*{\rol}[1]{\colorlet{temp}{.}\color{red}\overline{\color{temp}#1}\color{temp}}
+\newcommand*{\rul}[1]{\color{red}\underline{{\color{black}#1}}\color{black}}
+\newcommand*{\bol}[1]{\colorlet{temp}{.}\color{blue}\overline{\color{temp}#1}\color{temp}}
+\newcommand*{\bul}[1]{\color{blue}\underline{{\color{black}#1}}\color{black}}
+\newcommand*{\gol}[1]{\colorlet{temp}{.}\color{DarkGreen}\overline{\color{temp}#1}\color{temp}}
+\newcommand*{\gul}[1]{\color{DarkGreen}\underline{{\color{black}#1}}\color{black}}
+\newcommand*{\wt}[1]{\widetilde{#1}}
+\newcommand*{\wh}[1]{\widehat{#1}}
+
+
+%----- Classes of fibrations/virtual double categories (only for this thesis) --------------------------
+
+\NewDocumentCommand{\lc}{s t= t+}{%
+    \IfBooleanT{#1}{%
+    \times\land%
+    }
+    \IfBooleanT{#2}{%
+    =
+    }
+    \IfBooleanT{#3}{%
+    \exists
+    }
+}
+\newcommand*{\el}{{\lc*=}}
+\newcommand*{\exi}{{\lc*+}}
+\newcommand*{\eltwo}{\el}
+\newcommand*{\exitwo}{\exi}
+\newcommand*{\eef}{{\lc*=+}}
+\NewDocumentCommand{\vlc}{s t= t+}{%
+    \IfBooleanT{#1}{%
+    \times\land%
+    }
+    \IfBooleanT{#2}{%
+    \ide{}
+    }
+    \IfBooleanT{#3}{%
+    \odot
+    }
+}
+\NewDocumentCommand{\VDbl}{t- s t= t+  t?}{%
+    {\IfBooleanT{#1}{%
+    \bi{F}
+    }
+    \bi{VDbl}_
+    {\,
+    \IfBooleanTF{#3}
+    {\nrightarrow}{\!}
+    \IfBooleanT{#4}
+    {\odot}
+    \IfBooleanT{#5}
+    {\triangleright}
+    \IfBooleanT{#2}
+    {,\bi{cart}}
+    }}
+}
+\newcommand*{\FibVDblCart}{\VDbl-\carttwo}
+
+\newcommand*{\tightcat}{\text{t}}
+\newcommand*{\catofloose}{\ell}
+\newcommand*{\horl}{{\begin{tikzpicture}[baseline=-2.5pt]\draw[-] (0,0) -- (0.1,0);\end{tikzpicture}}} 
+\newcommand*{\psb}[1]{\mkern2mu\left[\mkern-8mu\horl\mkern2mu#1\mkern2mu\horl\mkern-8mu\right]\mkern2mu} 
+\newcommand*{\psbsm}[1]{\mkern1mu\left[\mkern-6mu\horl\mkern1mu#1\mkern1mu\horl\mkern-6mu\right]\mkern1mu}
+\newcommand*{\spl}{\textbf{split}}
+\newcommand*{\sinv}{^{\mathsf{-1}}}
+\newcommand*{\nS}{\dbl{S}}
+\newcommand*{\Ufd}{\mathrm{Ufd}}
+\newcommand*{\Fd}{\mathrm{Fd}}
+
+\newcommand*{\UVDbl}{\bi{UVDbl}}
+\newcommand*{\CVDbl}{\bi{CVDbl}}
+\newcommand*{\FibVDbl}{\bi{FibVDbl}}
+\newcommand*{\FibUVDbl}{\bi{FibUVDbl}}
+\newcommand*{\FibCVDbl}{\bi{FibCVDbl}}
+\newcommand*{\FibEVDbl}{\VDbl-?}
+
+
+
+
+
+%----- abbreviations (additional) -----------------------------------------------
+
+
+
+
+\newcommand*{\ide}[1]{\!\nrightarrow_{#1}\!}
+\newcommand*{\ides}{\nrightarrow}
+
+
+
+\newcommand*{\der}{\blacktriangleright}
+\newcommand*{\crder}{\blacktriangleright^{\crude}}
+\newcommand*{\sat}{\triangle}
+\newcommand*{\essat}{\textsf{sat}}
+\newcommand*{\crude}{\diamondsuit}
+\newcommand*{\Cd}{\mathrm{CD}}
+\newcommand*{\Dcd}{\mathrm{DCD}}
+\newcommand*{\tm}{\textsf{tm}}
+\newcommand*{\ty}{\textsf{ty}}
+\newcommand*{\ptm}{\textsf{ptm}}
+\newcommand*{\pty}{\textsf{pty}}
+\newcommand*{\metaid}{\mathbf{Id}}
+\newcommand*{\trr}{\textsf{tr}}
+\newcommand*{\rest}{\textsf{rest}}
+\newcommand*{\resti}{\textsf{rest-iter}}
+\newcommand*{\reste}{\textsf{rest-ide}}
+\newcommand*{\repl}{\textsf{repl}}
+\newcommand*{\exc}{\textsf{exc}}
+\newcommand*{\idt}{\textsf{id}}
+\newcommand*{\iv}{\textsf{-inv}}
+
+\newcommand*{\fow}{^{\syto}}
+\newcommand*{\back}{^{\syfrom}}
+\newcommand*{\pr}[1]{\textsf{pr}_{#1}}
+
+%------ mathpartir.sty ----------------
+\makeatletter
+\define@key {mprset}{style}[1]{\def\TirNameStyle{#1}}
+\def\l@subsection{\@tocline{1}{0pt}{2pc}{}{}}
+\makeatother
+
+\AtBeginEnvironment{mathpar}{\scriptsize}
+\mprset{style={\scriptsize\scshape}}
+\AtBeginEnvironment{mathparpagebreakable}{\scriptsize}
+\mprset{style={\scriptsize\scshape}}
+
+\makeatletter
+\newcommand*{\colequiv}{\mathrel{\rlap{%
+                    \raisebox{0.3ex}{$\m@th\cdot$}}%
+                    \raisebox{-0.3ex}{$\m@th\cdot$}}%
+                    \equiv}
+\makeatother
+
+\newcommand*\lon{%
+        \nobreak
+        \mskip6mu plus1mu
+        \mathpunct{}%
+        \nonscript
+        \mkern-\thinmuskip
+        {:}%
+        \mskip2mu
+        \relax
+}
+
+%%%%% Tikzpict (String Diagrams)
+\tikzset{unit/.style={isosceles triangle, isosceles triangle stretches, draw, inner sep=0pt, shape border rotate=90, minimum height=0.6cm, minimum width=1.2cm, anchor = center}}
+\tikzset{counit/.style={isosceles triangle, isosceles triangle stretches, draw, inner sep=0pt, shape border rotate=-90, minimum height=0.6cm, minimum width=1.2cm, anchor = center}}
+\tikzset{unitw/.style={isosceles triangle, isosceles triangle stretches, draw, inner sep=0pt, shape border rotate=90, minimum width=1.6cm, minimum height=1.0cm, anchor = center}}
+\tikzset{counitw/.style={isosceles triangle, isosceles triangle stretches, draw, inner sep=0pt, shape border rotate=-90, minimum width=1.6cm, minimum height=1.0cm, anchor = center}}
+\tikzset{vertid/.style={rectangle, draw, inner sep=0pt, fill= black, minimum width=0.1cm}}
+\tikzset{horid/.style={rectangle, draw, inner sep=0pt, fill=black, minimum height=0.1cm}}
+\tikzset{unique/.style={circle, draw, inner sep=0pt, minimum size=0.5cm, fill=gray!40}}
+\tikzset{first/.style={circle, inner sep=0pt, minimum size=0.5cm, top color=violet!40, bottom color = red!40, anchor=center, draw=black}}
+\tikzset{second/.style={circle, inner sep=0pt, minimum size=0.5cm, top color=violet!40, bottom color = blue!40, anchor=center, draw=black}}
+\tikzset{cell/.style={rectangle, draw, inner sep=0pt, minimum height=0.5cm, minimum width=0.5cm}} 
+
+\tikzset{whf/.style={fill=white}}
+\tikzset{redfill/.style={fill=red!40, draw=black}}
+\tikzset{bluefill/.style={fill=blue!40, draw=black}}
+\tikzset{viofill/.style={fill=violet!40, draw=black}}
+\tikzset{redline/.style={draw=red}}
+\tikzset{blueline/.style={draw=blue}}
+\tikzset{violine/.style={draw=violet}}
+
+\newenvironment{stdiag}{%
+    \pgfdeclarelayer{very background layer}
+    \pgfdeclarelayer{background layer}
+    \pgfdeclarelayer{foreground layer}
+    \pgfsetlayers{very background layer, background layer,main,foreground layer}
+    \begin{tikzpicture}[baseline=(current bounding box.center), every node/.style={font=\tiny}]
+}{%
+    \end{tikzpicture}
+}
+\newenvironment{nodes}{%
+    \begin{pgfonlayer}{foreground layer}
+}{%
+    \end{pgfonlayer}
+}
+\newenvironment{edges}{%
+    \begin{pgfonlayer}{background layer}
+}{%
+    \end{pgfonlayer}
+}
+\newenvironment{anno}{%
+    \begin{pgfonlayer}{very background layer}
+}{%
+    \end{pgfonlayer}
+}
+
+\newcommand{\labeleditem}{\item\phantomsection}
+
+\definecolor{MAGENTA}{RGB}{255,0,255}
+
+\endinput
